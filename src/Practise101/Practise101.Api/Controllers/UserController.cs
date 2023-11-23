@@ -64,6 +64,23 @@ namespace Practise101.Api.Controllers
 
         }
 
+        [HttpPost("verify")]
+        public async Task<IActionResult> Verify(string token)
+        {
+            var user = _dataContext.Users.FirstOrDefault(u => u.VerificationToken == token);
+
+            if (user == null)
+            {
+                return BadRequest("Invalid token.");
+            }
+
+            user.VerifiedAt = DateTime.Now;
+            await _dataContext.SaveChangesAsync();
+
+            return Ok("User verified!");
+
+        }
+
         private string CreateRandomToken()
         {
             return Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
