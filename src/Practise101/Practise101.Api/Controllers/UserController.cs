@@ -99,6 +99,27 @@ namespace Practise101.Api.Controllers
 
         }
 
+        [HttpPost("resetpassword")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequest resetPasswordRequest)
+        {
+            var user = _dataContext.Users.FirstOrDefault(u => u.PasswordResetToken == resetPasswordRequest.Token);
+
+            if (user == null || user.ResetTokenExpires < DateTime.Now)
+            {
+                return BadRequest("Invalid token.");
+            }
+
+            CreatePasswordHash(resetPasswordRequest.Password, out byte[] passwordHash, out byte[] passwordSalt);
+            user.PasswordHash = passwordHash;
+            user.PasswordSalt = passwordSalt;
+            user.PasswordResetToken = null;
+            user.ResetTokenExpires = null;
+            await _dataContext.SaveChangesAsync();
+
+            return Ok("Password succesfully reset.");
+
+        }
+
         private string CreateRandomToken()
         {
             return Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
