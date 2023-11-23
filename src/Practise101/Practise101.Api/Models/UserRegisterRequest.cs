@@ -2,7 +2,7 @@
 
 namespace Practise101.Api.Models
 {
-    public class UserRegisterReguest
+    public class UserRegisterRequest
     {
         [Required, EmailAddress]
         public string Email { get; set; } = string.Empty;
