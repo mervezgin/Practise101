@@ -81,6 +81,24 @@ namespace Practise101.Api.Controllers
 
         }
 
+        [HttpPost("forgotpassword")]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            var user = _dataContext.Users.FirstOrDefault(u => u.Email == email);
+
+            if (user == null)
+            {
+                return BadRequest("User not found.");
+            }
+
+            user.PasswordResetToken = CreateRandomToken();
+            user.ResetTokenExpires = DateTime.Now.AddDays(1);
+            await _dataContext.SaveChangesAsync();
+
+            return Ok("You may now reset your password.");
+
+        }
+
         private string CreateRandomToken()
         {
             return Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
