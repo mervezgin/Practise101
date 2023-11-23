@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Practise101.Api.Data;
 using Practise101.Api.Models;
 using System.Security.Cryptography;
 
@@ -37,7 +38,30 @@ namespace Practise101.Api.Controllers
             await _dataContext.SaveChangesAsync();
 
             return Ok("User succesfully created.");
-               
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(UserLoginRequest request)
+        {
+            var user = _dataContext.Users.FirstOrDefault(u => u.Email == request.Email);
+
+            if (user == null)
+            {
+                return BadRequest("User not found");
+            }
+
+            if (user.VerifiedAt == null)
+            {
+                return BadRequest("Not verified.");
+            }
+
+            if (!VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
+            {
+                return BadRequest("Password is incorrect.");
+            }
+
+            return Ok($"Welcome back, {user.Email}! :)");
+
         }
 
         private string CreateRandomToken()
@@ -47,10 +71,19 @@ namespace Practise101.Api.Controllers
 
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
-            using(var hmac = new HMACSHA512())
+            using (var hmac = new HMACSHA512())
             {
                 passwordSalt = hmac.Key;
                 passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+            }
+        }
+
+        private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
+        {
+            using (var hmac = new HMACSHA512(passwordSalt))
+            {
+                var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+                return computedHash.SequenceEqual(passwordHash);
             }
         }
     }

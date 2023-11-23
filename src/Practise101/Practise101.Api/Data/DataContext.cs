@@ -18,7 +18,7 @@ namespace Practise101.Api.Data
                 .UseSqlServer("Server=.;Database=practise101;Trusted_Connection=true;TrustServerCertificate=True");  
         }
 
-        public DbSet<User> Users => Set<User>();
+        public DbSet<User> Users {  get; set; }
 
 
     }

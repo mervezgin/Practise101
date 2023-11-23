@@ -1,5 +1,5 @@
+using Practise101.Api.Data;
 
-global using Practise101.Api.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
